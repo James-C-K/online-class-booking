@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useLang } from '@/lib/LanguageContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useLang();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -34,7 +36,7 @@ export default function SignupPage() {
         },
       });
       if (error) throw error;
-      showToast('Registration successful! Please check your email for verification.');
+      showToast(t.signUpSuccess);
       setTimeout(() => router.push('/login'), 2000);
     } catch (error) {
       showToast(error.message, true);
@@ -48,29 +50,29 @@ export default function SignupPage() {
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div className="glass-card animate-fade-in">
           <h1 className="gradient-text" style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Create Account
+            {t.createAccount}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '2rem' }}>
-            Join Class-Booking today.
+            {t.signupSubtitle}
           </p>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                Full Name
+                {t.fullName}
               </label>
               <input
                 className="glass-input"
                 type="text"
                 name="fullname"
-                placeholder="John Doe"
+                placeholder={t.fullNamePlaceholder}
                 required
               />
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                Email address
+                {t.email}
               </label>
               <input
                 className="glass-input"
@@ -83,7 +85,7 @@ export default function SignupPage() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                Password
+                {t.password}
               </label>
               <input
                 className="glass-input"
@@ -96,23 +98,23 @@ export default function SignupPage() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                I am a...
+                {t.iAm}
               </label>
               <select className="glass-select" name="role" defaultValue="student">
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
+                <option value="student">{t.student}</option>
+                <option value="teacher">{t.teacher}</option>
               </select>
             </div>
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Creating account...' : 'Get Started'}
+              {loading ? t.creatingAccount : t.getStarted}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Already have an account?{' '}
+            {t.alreadyHaveAccount}{' '}
             <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
-              Sign in
+              {t.signIn}
             </Link>
           </p>
         </div>

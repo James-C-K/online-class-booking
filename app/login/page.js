@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useLang } from '@/lib/LanguageContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLang();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -26,7 +28,7 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      showToast('Login successful! Redirecting...');
+      showToast(t.loginSuccess);
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch (error) {
       showToast(error.message, true);
@@ -40,16 +42,16 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div className="glass-card animate-fade-in">
           <h1 className="gradient-text" style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Welcome Back
+            {t.welcomeBack}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '2rem' }}>
-            Log in to your account.
+            {t.loginSubtitle}
           </p>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                Email address
+                {t.email}
               </label>
               <input
                 className="glass-input"
@@ -62,7 +64,7 @@ export default function LoginPage() {
 
             <div style={{ marginBottom: '0.75rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                Password
+                {t.password}
               </label>
               <input
                 className="glass-input"
@@ -76,20 +78,20 @@ export default function LoginPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: 0, color: 'var(--text-muted)' }}>
                 <input type="checkbox" style={{ width: '16px', height: '16px', margin: 0 }} />
-                Remember me
+                {t.rememberMe}
               </label>
-              <a href="#" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Forgot password?</a>
+              <a href="#" style={{ color: 'var(--primary)', textDecoration: 'none' }}>{t.forgotPassword}</a>
             </div>
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t.signingIn : t.signIn}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Don&apos;t have an account?{' '}
+            {t.noAccount}{' '}
             <Link href="/signup" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
-              Sign up
+              {t.signUp}
             </Link>
           </p>
         </div>

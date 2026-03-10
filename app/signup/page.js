@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/lib/LanguageContext';
+import LangToggle from '@/components/LangToggle';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,7 +47,10 @@ export default function SignupPage() {
   };
 
   return (
-    <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
+    <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem', background: 'radial-gradient(circle at top left, #1e1b4b, #0f172a, #020617)' }}>
+      <div className="shape shape-1" />
+      <div className="shape shape-2" />
+      <LangToggle />
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div className="glass-card animate-fade-in">
           <h1 className="gradient-text" style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>

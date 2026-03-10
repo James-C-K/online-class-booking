@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server';
 import TeacherDashboardClient from './TeacherDashboardClient';
 
 export default async function TeacherDashboard() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

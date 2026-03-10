@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import SessionsClient from './SessionsClient';
 
 export default async function StudentSessionsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 // Cancel or complete a session, add notes
 export async function PATCH(request, { params }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

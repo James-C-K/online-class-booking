@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import InstructorsClient from './InstructorsClient';
 
 export default async function StudentInstructorsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

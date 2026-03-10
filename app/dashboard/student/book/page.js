@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import BookingClient from './BookingClient';
 
 export default async function BookPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

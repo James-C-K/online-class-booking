@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server';
 import StudentDashboardClient from './StudentDashboardClient';
 
 export default async function StudentDashboard() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

@@ -6,7 +6,7 @@ import { useLang } from '@/lib/LanguageContext';
 const DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
 
-export default function InstructorsClient({ instructors, availabilityByInstructor }) {
+export default function InstructorsClient({ instructors, availabilityByInstructor, subjectsByInstructor = {} }) {
   const { t, lang } = useLang();
   const days = lang === 'zh' ? DAYS_ZH : DAYS_EN;
 
@@ -46,6 +46,7 @@ export default function InstructorsClient({ instructors, availabilityByInstructo
           {instructors.map(inst => {
             const avail = availabilityByInstructor[inst.id] || [];
             const activeDays = [...new Set(avail.map(a => a.day_of_week))].sort();
+            const subjects = subjectsByInstructor[inst.id] || [];
 
             return (
               <div key={inst.id} style={{
@@ -71,6 +72,26 @@ export default function InstructorsClient({ instructors, availabilityByInstructo
                     <div style={{ fontSize: '0.75rem', color: '#6366f1', marginTop: '2px' }}>{t.role_teacher}</div>
                   </div>
                 </div>
+
+                {/* Subjects */}
+                {subjects.length > 0 && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {lang === 'zh' ? '教授科目' : 'Subjects'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {subjects.map(s => (
+                        <span key={s.id} style={{
+                          padding: '3px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 500,
+                          background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)',
+                          color: '#818cf8',
+                        }}>
+                          {lang === 'zh' ? s.name_zh : s.name_en}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Availability days */}
                 <div style={{ marginBottom: '1.25rem' }}>

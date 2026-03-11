@@ -35,5 +35,19 @@ export default async function StudentInstructorsPage() {
     });
   }
 
-  return <InstructorsClient instructors={instructors} availabilityByInstructor={availabilityByInstructor} />;
+  // Fetch subjects for each instructor
+  const subjectsByInstructor = {};
+  if (instructors.length > 0) {
+    const { data: ts } = await supabase
+      .from('teacher_subjects')
+      .select('teacher_id, subject:subjects(id, name_en, name_zh)')
+      .in('teacher_id', instructors.map(i => i.id));
+
+    (ts || []).forEach(r => {
+      if (!subjectsByInstructor[r.teacher_id]) subjectsByInstructor[r.teacher_id] = [];
+      if (r.subject) subjectsByInstructor[r.teacher_id].push(r.subject);
+    });
+  }
+
+  return <InstructorsClient instructors={instructors} availabilityByInstructor={availabilityByInstructor} subjectsByInstructor={subjectsByInstructor} />;
 }

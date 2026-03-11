@@ -55,9 +55,16 @@ CREATE TABLE IF NOT EXISTS student_instructor_assignments (
   teacher_id  UUID REFERENCES profiles(id) ON DELETE CASCADE,
   org_id      UUID REFERENCES organizations(id) ON DELETE CASCADE,
   assigned_by UUID REFERENCES profiles(id),
-  created_at  TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (student_id, teacher_id, org_id)
+  created_at  TIMESTAMPTZ DEFAULT NOW()
 );
+-- Partial unique indexes handle NULL org_id correctly
+-- (standard UNIQUE constraint treats NULL != NULL in PostgreSQL)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_assignments_no_org
+  ON student_instructor_assignments (student_id, teacher_id)
+  WHERE org_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_assignments_with_org
+  ON student_instructor_assignments (student_id, teacher_id, org_id)
+  WHERE org_id IS NOT NULL;
 
 -- 6. AVAILABILITY
 CREATE TABLE IF NOT EXISTS availability (
@@ -111,10 +118,11 @@ BEGIN
     NEW.id,
     NEW.raw_user_meta_data->>'full_name',
     COALESCE(NEW.raw_user_meta_data->>'role', 'student')
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -133,41 +141,66 @@ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE session_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_instructor_assignments ENABLE ROW LEVEL SECURITY;
 
--- Profiles: users can read any profile, update only their own
+-- Helper: check if current user is admin (SECURITY DEFINER avoids RLS recursion)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('org_admin', 'platform_admin')
+  );
+$$;
+
+-- PROFILES
+CREATE POLICY "profiles_insert" ON profiles FOR INSERT WITH CHECK (true);
 CREATE POLICY "profiles_select" ON profiles FOR SELECT USING (true);
 CREATE POLICY "profiles_update" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "profiles_update_admin" ON profiles FOR UPDATE USING (is_admin());
 
--- Org memberships: members can view memberships in their org
-CREATE POLICY "org_memberships_select" ON org_memberships FOR SELECT USING (true);
-
--- Organizations: anyone authenticated can view
+-- ORGANIZATIONS
 CREATE POLICY "organizations_select" ON organizations FOR SELECT USING (true);
 
--- Subjects: anyone authenticated can view active subjects
-CREATE POLICY "subjects_select" ON subjects FOR SELECT USING (is_active = true);
+-- ORG MEMBERSHIPS
+CREATE POLICY "org_memberships_select" ON org_memberships FOR SELECT USING (true);
 
--- Availability: anyone can view
+-- SUBJECTS
+CREATE POLICY "subjects_select" ON subjects FOR SELECT USING (is_active = true OR is_admin());
+CREATE POLICY "subjects_insert" ON subjects FOR INSERT WITH CHECK (is_admin());
+CREATE POLICY "subjects_update" ON subjects FOR UPDATE USING (is_admin());
+
+-- AVAILABILITY
 CREATE POLICY "availability_select" ON availability FOR SELECT USING (true);
 CREATE POLICY "availability_insert" ON availability FOR INSERT WITH CHECK (auth.uid() = instructor_id);
 CREATE POLICY "availability_update" ON availability FOR UPDATE USING (auth.uid() = instructor_id);
 CREATE POLICY "availability_delete" ON availability FOR DELETE USING (auth.uid() = instructor_id);
 
--- Sessions: participants can view their own sessions
+-- SESSIONS
 CREATE POLICY "sessions_select" ON sessions FOR SELECT USING (
-  instructor_id = auth.uid() OR
-  id IN (SELECT session_id FROM session_participants WHERE user_id = auth.uid())
+  instructor_id = auth.uid()
+  OR id IN (SELECT session_id FROM session_participants WHERE user_id = auth.uid())
+);
+CREATE POLICY "sessions_select_admin" ON sessions FOR SELECT USING (is_admin());
+CREATE POLICY "sessions_insert" ON sessions FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "sessions_update" ON sessions FOR UPDATE USING (
+  instructor_id = auth.uid()
+  OR id IN (SELECT session_id FROM session_participants WHERE user_id = auth.uid())
 );
 
--- Session participants: can view own participation
+-- SESSION PARTICIPANTS
 CREATE POLICY "session_participants_select" ON session_participants FOR SELECT USING (
-  user_id = auth.uid() OR
-  session_id IN (SELECT id FROM sessions WHERE instructor_id = auth.uid())
+  user_id = auth.uid()
+  OR session_id IN (SELECT id FROM sessions WHERE instructor_id = auth.uid())
+);
+CREATE POLICY "session_participants_insert" ON session_participants FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "session_participants_update" ON session_participants FOR UPDATE USING (
+  user_id = auth.uid()
+  OR session_id IN (SELECT id FROM sessions WHERE instructor_id = auth.uid())
 );
 
--- Assignments: can view own
+-- STUDENT–INSTRUCTOR ASSIGNMENTS
 CREATE POLICY "assignments_select" ON student_instructor_assignments FOR SELECT USING (
   student_id = auth.uid() OR teacher_id = auth.uid()
 );
+CREATE POLICY "assignments_insert" ON student_instructor_assignments FOR INSERT WITH CHECK (is_admin());
+CREATE POLICY "assignments_delete" ON student_instructor_assignments FOR DELETE USING (is_admin());
 
 -- ============================================================
 -- SEED: default subjects

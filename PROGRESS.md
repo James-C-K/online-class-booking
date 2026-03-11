@@ -1,6 +1,6 @@
 # X Platform — Progress Tracker
-**Last updated:** 2026-03-10
-**Version:** Phase 1 complete (pending live verification)
+**Last updated:** 2026-03-11
+**Version:** Phase 1 — all known issues fixed (pending live verification)
 
 ---
 
@@ -100,23 +100,31 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
 
 ---
 
-## 🔧 Pending — Known Issues to Fix Next Session
+## ✅ Fixed — 2026-03-11
 
-- [ ] **Become platform_admin:** After signing up, go to Supabase → Table Editor → profiles → change your `role` to `platform_admin`
-- [ ] **Verify end-to-end flow works on Zeabur** — signup → email confirm → dashboard
-- [ ] **`student_instructor_assignments` UNIQUE constraint** — `org_id` is nullable which may cause issues with the upsert conflict clause. May need schema fix.
-- [ ] **Sessions RLS INSERT policy missing** — students/teachers can't create sessions via API without an INSERT policy. Add:
-  ```sql
-  CREATE POLICY "sessions_insert" ON sessions FOR INSERT WITH CHECK (auth.uid() = instructor_id);
-  CREATE POLICY "session_participants_insert" ON session_participants FOR INSERT WITH CHECK (true);
-  CREATE POLICY "availability_insert_fix" ON availability FOR INSERT WITH CHECK (true);
-  ```
-- [ ] **Admin analytics** — `subjectStats` query uses `.not('subject_id', 'is', null)` but RLS on sessions only allows own sessions — admin needs elevated read access. Add:
-  ```sql
-  CREATE POLICY "sessions_select_admin" ON sessions FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('org_admin', 'platform_admin'))
-  );
-  ```
+All Phase 1 known issues resolved. Run `supabase/fixes.sql` in Supabase SQL Editor.
+
+### What was fixed:
+- **`sessions/[id]/route.js`** — `params` must be `await`-ed in Next.js 16 (code fix)
+- **`sessions` INSERT policy** — students can now book sessions
+- **`sessions` UPDATE policy** — cancel and notes now work
+- **`sessions` SELECT admin policy** — admin analytics now sees all sessions
+- **`session_participants` INSERT policy** — participants added correctly on booking
+- **`session_participants` UPDATE policy** — cancel updates participant status
+- **`profiles` INSERT policy** — signup trigger can create profile rows
+- **`profiles` UPDATE admin policy** — admins can change any user's role
+- **`subjects` INSERT/UPDATE policies** — admin can add and toggle subjects
+- **`subjects` SELECT** — admins can see inactive subjects
+- **`student_instructor_assignments` INSERT/DELETE** — admin can assign/unassign
+- **`student_instructor_assignments` UNIQUE constraint** — replaced broken `UNIQUE(student_id, teacher_id, org_id)` with two partial unique indexes that handle NULL `org_id` correctly
+- **`is_admin()` helper function** — SECURITY DEFINER function prevents RLS recursion in admin policies
+- **Orphaned profiles cleanup** — ghost profile rows without auth.users entries removed
+
+## 🔧 Pending
+
+- [ ] **Become platform_admin:** Sign up, then go to Supabase → Table Editor → profiles → change your `role` to `platform_admin`
+- [ ] **Run `supabase/fixes.sql`** in Supabase SQL Editor
+- [ ] **Verify end-to-end flow on Zeabur** — signup → email confirm → dashboard → book a session
 
 ---
 

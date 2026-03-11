@@ -6,25 +6,27 @@ import { useLang } from '@/lib/LanguageContext';
 import { supabase } from '@/lib/supabase';
 
 const studentNav = (t) => [
-  { href: '/dashboard/student',     label: t.dashboard,       icon: '⊞' },
-  { href: '/dashboard/student/book', label: t.bookSession,     icon: '＋' },
-  { href: '/dashboard/student/sessions', label: t.mySessions,  icon: '📅' },
-  { href: '/dashboard/student/instructors', label: t.myInstructors, icon: '👤' },
+  { href: '/dashboard/student',             label: t.dashboard,      icon: '⊞' },
+  { href: '/dashboard/student/book',        label: t.bookSession,    icon: '＋' },
+  { href: '/dashboard/student/calendar',    label: t.calendar,       icon: '📅' },
+  { href: '/dashboard/student/sessions',    label: t.mySessions,     icon: '🗒' },
+  { href: '/dashboard/student/instructors', label: t.myInstructors,  icon: '👤' },
 ];
 
 const teacherNav = (t) => [
-  { href: '/dashboard/teacher',          label: t.dashboard,       icon: '⊞' },
-  { href: '/dashboard/teacher/availability', label: t.myAvailability, icon: '📅' },
-  { href: '/dashboard/teacher/sessions', label: t.mySessions,      icon: '🗓' },
-  { href: '/dashboard/teacher/students', label: t.myStudents,      icon: '👥' },
+  { href: '/dashboard/teacher',                label: t.dashboard,       icon: '⊞' },
+  { href: '/dashboard/teacher/availability',   label: t.myAvailability,  icon: '🗓' },
+  { href: '/dashboard/teacher/calendar',       label: t.calendar,        icon: '📅' },
+  { href: '/dashboard/teacher/sessions',       label: t.mySessions,      icon: '🗒' },
+  { href: '/dashboard/teacher/students',       label: t.myStudents,      icon: '👥' },
 ];
 
 const adminNav = (t) => [
-  { href: '/dashboard/admin',          label: t.dashboard,     icon: '⊞' },
-  { href: '/dashboard/admin/users',    label: t.manageUsers,   icon: '👥' },
-  { href: '/dashboard/admin/orgs',     label: t.organizations, icon: '🏢' },
-  { href: '/dashboard/admin/subjects', label: t.subjects,      icon: '📚' },
-  { href: '/dashboard/admin/analytics', label: t.analytics,   icon: '📊' },
+  { href: '/dashboard/admin',           label: t.dashboard,    icon: '⊞' },
+  { href: '/dashboard/admin/calendar',  label: t.calendar,     icon: '📅' },
+  { href: '/dashboard/admin/users',     label: t.manageUsers,  icon: '👥' },
+  { href: '/dashboard/admin/subjects',  label: t.subjects,     icon: '📚' },
+  { href: '/dashboard/admin/analytics', label: t.analytics,    icon: '📊' },
 ];
 
 function getNav(role, t) {
@@ -43,7 +45,7 @@ function getRoleLabel(role, t) {
   return map[role] || role;
 }
 
-export default function Sidebar({ user, profile }) {
+export default function Sidebar({ user, profile, isOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
   const { t, lang, toggleLang } = useLang();
@@ -55,25 +57,14 @@ export default function Sidebar({ user, profile }) {
     router.push('/login');
   };
 
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <aside style={{
-      width: '240px',
-      minHeight: '100vh',
-      background: 'rgba(255,255,255,0.03)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      borderRight: '1px solid rgba(255,255,255,0.08)',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '1.5rem 1rem',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      zIndex: 40,
-    }}>
+    <aside className={`sidebar-desktop${isOpen ? ' sidebar-open' : ''}`}>
       {/* Logo */}
-      <div style={{ marginBottom: '2rem', padding: '0 0.5rem' }}>
+      <div style={{ marginBottom: '2rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{
           fontSize: '1.25rem',
           fontWeight: 700,
@@ -83,6 +74,19 @@ export default function Sidebar({ user, profile }) {
         }}>
           Class-Booking
         </span>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          style={{
+            display: 'none', // shown via CSS on mobile
+            background: 'none', border: 'none', color: '#94a3b8',
+            cursor: 'pointer', fontSize: '1.1rem', padding: '4px',
+          }}
+          className="sidebar-close-btn"
+          aria-label="Close menu"
+        >
+          ✕
+        </button>
       </div>
 
       {/* User info */}
@@ -102,11 +106,11 @@ export default function Sidebar({ user, profile }) {
       </div>
 
       {/* Nav links */}
-      <nav style={{ flex: 1 }}>
+      <nav style={{ flex: 1, overflowY: 'auto' }}>
         {nav.map(({ href, label, icon }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href !== '/dashboard/student' && href !== '/dashboard/teacher' && href !== '/dashboard/admin' && pathname.startsWith(href));
           return (
-            <Link key={href} href={href} style={{
+            <Link key={href} href={href} onClick={handleNavClick} style={{
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
@@ -121,7 +125,7 @@ export default function Sidebar({ user, profile }) {
               border: active ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
               transition: 'all 0.2s ease',
             }}>
-              <span style={{ fontSize: '1rem' }}>{icon}</span>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>{icon}</span>
               {label}
             </Link>
           );
@@ -170,8 +174,8 @@ export default function Sidebar({ user, profile }) {
           textAlign: 'left',
           transition: 'all 0.2s ease',
         }}
-          onMouseEnter={e => e.target.style.color = '#f8fafc'}
-          onMouseLeave={e => e.target.style.color = '#94a3b8'}
+          onMouseEnter={e => e.currentTarget.style.color = '#f8fafc'}
+          onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
         >
           ↪ {t.signOut}
         </button>

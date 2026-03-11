@@ -48,14 +48,16 @@ export async function POST(request) {
     .is('org_id', null)
     .maybeSingle();
 
-  if (existing) return NextResponse.json({ success: true }); // already assigned
+  if (existing) return NextResponse.json({ id: existing.id, success: true });
 
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('student_instructor_assignments')
-    .insert({ student_id, teacher_id, assigned_by: user.id });
+    .insert({ student_id, teacher_id, assigned_by: user.id })
+    .select('id')
+    .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ id: inserted.id, success: true });
 }
 
 export async function DELETE(request) {

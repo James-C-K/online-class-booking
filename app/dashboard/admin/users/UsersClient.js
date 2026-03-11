@@ -58,11 +58,12 @@ export default function UsersClient({ users: initial, teachers, students, assign
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ student_id: studentId, teacher_id: teacherId }),
     });
+    const data = await res.json();
     if (res.ok) {
-      setAssignments(prev => [...prev.filter(a => !(a.student_id === studentId && a.teacher_id === teacherId)), { student_id: studentId, teacher_id: teacherId, id: Date.now() }]);
+      setAssignments(prev => [...prev.filter(a => !(a.student_id === studentId && a.teacher_id === teacherId)), { student_id: studentId, teacher_id: teacherId, id: data.id }]);
       showToast(lang === 'zh' ? '老師已指派' : 'Instructor assigned');
     } else {
-      showToast((await res.json()).error, true);
+      showToast(data.error, true);
     }
   };
 

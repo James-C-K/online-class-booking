@@ -39,9 +39,20 @@ export async function POST(request) {
 
   const { student_id, teacher_id } = await request.json();
 
+  // Check if assignment already exists (avoids broken onConflict with partial indexes)
+  const { data: existing } = await supabase
+    .from('student_instructor_assignments')
+    .select('id')
+    .eq('student_id', student_id)
+    .eq('teacher_id', teacher_id)
+    .is('org_id', null)
+    .maybeSingle();
+
+  if (existing) return NextResponse.json({ success: true }); // already assigned
+
   const { error } = await supabase
     .from('student_instructor_assignments')
-    .upsert({ student_id, teacher_id, assigned_by: user.id }, { onConflict: 'student_id,teacher_id,org_id' });
+    .insert({ student_id, teacher_id, assigned_by: user.id });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

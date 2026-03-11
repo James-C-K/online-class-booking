@@ -14,7 +14,7 @@ export default async function AdminAvailabilityPage() {
   // All teachers
   const { data: teachers } = await supabase
     .from('profiles')
-    .select('id, full_name, email')
+    .select('id, full_name')
     .eq('role', 'teacher')
     .order('full_name');
 

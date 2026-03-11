@@ -20,6 +20,14 @@ export default function AdminAvailabilityClient({ teachers }) {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
+  function slotHours(slots) {
+    return slots.reduce((sum, s) => {
+      const [sh, sm] = s.start_time.split(':').map(Number);
+      const [eh, em] = s.end_time.split(':').map(Number);
+      return sum + (eh + em / 60) - (sh + sm / 60);
+    }, 0);
+  }
+
   return (
     <div>
       {/* Header */}
@@ -64,6 +72,8 @@ export default function AdminAvailabilityClient({ teachers }) {
           const recurring = teacher.slots.filter(s => s.type === 'recurring');
           const manual = teacher.slots.filter(s => s.type === 'manual' && s.date >= todayStr);
           const hasAny = teacher.slots.length > 0;
+          const weeklyHours = slotHours(recurring);
+          const totalSlots = recurring.length + manual.length;
 
           // Build weekly map for recurring
           const weeklyMap = {};
@@ -104,7 +114,7 @@ export default function AdminAvailabilityClient({ teachers }) {
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
                     {hasAny
-                      ? `${recurring.length} ${lang === 'zh' ? '個週期時段' : 'recurring'} · ${manual.length} ${lang === 'zh' ? '個指定日期' : 'specific dates'}`
+                      ? `${totalSlots} ${lang === 'zh' ? '個時段' : 'slots'} · ${weeklyHours.toFixed(1)} ${lang === 'zh' ? '小時/週' : 'hrs/wk'} · ${manual.length} ${lang === 'zh' ? '個特定日期' : 'specific dates'}`
                       : (lang === 'zh' ? '尚未設定排程' : 'No availability set')}
                   </div>
                 </div>

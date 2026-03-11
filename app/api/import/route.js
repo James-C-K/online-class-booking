@@ -14,11 +14,11 @@ export async function POST(request) {
   }
 
   const { type, rows } = await request.json();
-  const admin = createAdminClient();
   const results = { success: 0, failed: 0, errors: [] };
 
   // ── Members ──────────────────────────────────────────────────────────────
   if (type === 'members') {
+    const admin = createAdminClient();
     for (const row of rows) {
       const full_name = row.full_name?.trim();
       const email = row.email?.trim().toLowerCase();
@@ -81,6 +81,7 @@ export async function POST(request) {
 
   // ── Assignments ───────────────────────────────────────────────────────────
   } else if (type === 'assignments') {
+    const admin = createAdminClient();
     // Collect all unique emails to batch-fetch profiles
     const allEmails = [];
     for (const row of rows) {

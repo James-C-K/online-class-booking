@@ -15,13 +15,13 @@ function addDays(date, n) {
 
 // ─── 1-on-1 Booking Wizard ───────────────────────────────────────────────────
 
-function OneOnOneTab({ instructors, subjects }) {
+function OneOnOneTab({ instructors }) {
   const { t, lang } = useLang();
   const router = useRouter();
   const days = lang === 'zh' ? DAYS_ZH : DAYS_EN;
 
   const [step, setStep] = useState(1);
-  const [selected, setSelected] = useState({ instructor: null, subject: null, date: null, slot: null });
+  const [selected, setSelected] = useState({ instructor: null, date: null, slot: null });
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(false);
@@ -63,7 +63,7 @@ function OneOnOneTab({ instructors, subjects }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           instructor_id: selected.instructor.id,
-          subject_id: selected.subject?.id || null,
+          subject_id: null,
           start_time: start, end_time: end,
         }),
       });
@@ -115,41 +115,26 @@ function OneOnOneTab({ instructors, subjects }) {
         {step === 1 && (
           <div>
             <h2 style={{ color: '#f8fafc', fontWeight: 600, marginBottom: '1.25rem', fontSize: '1rem' }}>
-              {lang === 'zh' ? '選擇老師與科目' : 'Select Instructor & Subject'}
+              {lang === 'zh' ? '選擇老師' : 'Select Instructor'}
             </h2>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
-                {lang === 'zh' ? '老師' : 'Instructor'}
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {instructors.map(inst => (
-                  <button key={inst.id} onClick={() => setSelected(p => ({ ...p, instructor: inst }))} style={{
-                    padding: '12px 16px', borderRadius: '12px', textAlign: 'left',
-                    border: selected.instructor?.id === inst.id ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                    background: selected.instructor?.id === inst.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
-                    color: '#f8fafc', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500,
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                  }}>
-                    <div style={{
-                      width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '0.8rem', fontWeight: 700, color: '#fff',
-                    }}>{inst.full_name?.[0]}</div>
-                    {inst.full_name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
-                {lang === 'zh' ? '科目（選填）' : 'Subject (optional)'}
-              </label>
-              <select className="glass-select" value={selected.subject?.id || ''}
-                onChange={e => setSelected(p => ({ ...p, subject: subjects.find(s => s.id === e.target.value) || null }))}>
-                <option value="">{lang === 'zh' ? '-- 不指定 --' : '-- No preference --'}</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{lang === 'zh' ? s.name_zh : s.name_en}</option>)}
-              </select>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
+              {instructors.map(inst => (
+                <button key={inst.id} onClick={() => setSelected(p => ({ ...p, instructor: inst }))} style={{
+                  padding: '12px 16px', borderRadius: '12px', textAlign: 'left',
+                  border: selected.instructor?.id === inst.id ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                  background: selected.instructor?.id === inst.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
+                  color: '#f8fafc', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500,
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.8rem', fontWeight: 700, color: '#fff',
+                  }}>{inst.full_name?.[0]}</div>
+                  {inst.full_name}
+                </button>
+              ))}
             </div>
             <button className="submit-btn" disabled={!selected.instructor} onClick={() => setStep(2)} style={{ marginTop: 0 }}>
               {lang === 'zh' ? '下一步' : 'Next'} →
@@ -234,7 +219,6 @@ function OneOnOneTab({ instructors, subjects }) {
             </h2>
             {[
               { label: lang === 'zh' ? '老師' : 'Instructor', value: selected.instructor?.full_name },
-              { label: lang === 'zh' ? '科目' : 'Subject', value: selected.subject ? (lang === 'zh' ? selected.subject.name_zh : selected.subject.name_en) : (lang === 'zh' ? '不指定' : 'No preference') },
               { label: lang === 'zh' ? '日期' : 'Date', value: selected.date?.toLocaleDateString(lang === 'zh' ? 'zh-TW' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) },
               { label: lang === 'zh' ? '時段' : 'Time', value: selected.slot ? `${selected.slot.start_time.slice(0, 5)} – ${selected.slot.end_time.slice(0, 5)}` : '—' },
             ].map(row => (
@@ -395,7 +379,7 @@ function GroupSessionsTab({ groupSessions }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function BookingClient({ instructors, subjects, groupSessions }) {
+export default function BookingClient({ instructors, groupSessions }) {
   const { lang } = useLang();
   const [tab, setTab] = useState('1on1');
 
@@ -437,7 +421,7 @@ export default function BookingClient({ instructors, subjects, groupSessions }) 
       </div>
 
       {tab === '1on1'
-        ? <OneOnOneTab instructors={instructors} subjects={subjects} />
+        ? <OneOnOneTab instructors={instructors} />
         : <GroupSessionsTab groupSessions={groupSessions || []} />
       }
     </div>

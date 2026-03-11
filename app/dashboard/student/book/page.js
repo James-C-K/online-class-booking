@@ -13,13 +13,6 @@ export default async function BookPage() {
     .select(`teacher:profiles!student_instructor_assignments_teacher_id_fkey (id, full_name)`)
     .eq('student_id', user.id);
 
-  // Active subjects
-  const { data: subjects } = await supabase
-    .from('subjects')
-    .select('id, name_en, name_zh')
-    .eq('is_active', true)
-    .order('name_en');
-
   // Available group sessions (not full, future, confirmed)
   // Get sessions the student has already joined
   const { data: joined } = await supabase
@@ -58,7 +51,6 @@ export default async function BookPage() {
   return (
     <BookingClient
       instructors={instructors}
-      subjects={subjects || []}
       groupSessions={enrichedGroups}
     />
   );

@@ -23,11 +23,12 @@ const teacherNav = (t) => [
 ];
 
 const adminNav = (t) => [
-  { href: '/dashboard/admin',           label: t.dashboard,    icon: '⊞' },
-  { href: '/dashboard/admin/calendar',  label: t.calendar,     icon: '📅' },
-  { href: '/dashboard/admin/users',     label: t.manageUsers,  icon: '👥' },
-  { href: '/dashboard/admin/subjects',  label: t.subjects,     icon: '📚' },
-  { href: '/dashboard/admin/analytics', label: t.analytics,    icon: '📊' },
+  { href: '/dashboard/admin',                 label: t.dashboard,           icon: '⊞' },
+  { href: '/dashboard/admin/calendar',        label: t.calendar,            icon: '📅' },
+  { href: '/dashboard/admin/users',           label: t.manageUsers,         icon: '👥' },
+  { href: '/dashboard/admin/availability',    label: t.teacherAvailability, icon: '🗓' },
+  { href: '/dashboard/admin/subjects',        label: t.subjects,            icon: '📚' },
+  { href: '/dashboard/admin/analytics',       label: t.analytics,           icon: '📊' },
 ];
 
 function getNav(role, t) {

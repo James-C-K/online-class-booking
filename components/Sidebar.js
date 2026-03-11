@@ -28,6 +28,7 @@ const adminNav = (t) => [
   { href: '/dashboard/admin/users',           label: t.manageUsers,         icon: '👥' },
   { href: '/dashboard/admin/availability',    label: t.teacherAvailability, icon: '🗓' },
   { href: '/dashboard/admin/subjects',        label: t.subjects,            icon: '📚' },
+  { href: '/dashboard/admin/import',          label: t.csvImport,           icon: '📥' },
   { href: '/dashboard/admin/analytics',       label: t.analytics,           icon: '📊' },
 ];
 

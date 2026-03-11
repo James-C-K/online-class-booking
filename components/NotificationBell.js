@@ -82,7 +82,7 @@ export default function NotificationBell({ userId }) {
       >
         🔔
         {unread.length > 0 && (
-          <span style={{
+          <span className="pulse-badge" style={{
             position: 'absolute', top: '-4px', right: '-4px',
             background: 'linear-gradient(135deg, #6366f1, #ec4899)',
             color: '#fff', fontSize: '0.6rem', fontWeight: 700,

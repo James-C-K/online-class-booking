@@ -142,14 +142,136 @@ body {
   right: -125px;
 }
 
+/* ===================== KEYFRAMES ===================== */
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.15); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+
+/* ===================== UTILITY ANIMATIONS ===================== */
+
+.animate-fade-in  { animation: fadeIn    0.8s cubic-bezier(0.4,0,0.2,1) forwards; }
+.page-enter       { animation: fadeInUp  0.35s cubic-bezier(0.4,0,0.2,1) both; }
+.card-enter       { animation: scaleIn   0.3s  cubic-bezier(0.4,0,0.2,1) both; }
+.shake            { animation: shake     0.4s  cubic-bezier(0.4,0,0.2,1); }
+
+/* Staggered list items */
+.stagger > *:nth-child(1) { animation: fadeInUp 0.3s 0.04s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(2) { animation: fadeInUp 0.3s 0.08s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(3) { animation: fadeInUp 0.3s 0.12s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(4) { animation: fadeInUp 0.3s 0.16s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(5) { animation: fadeInUp 0.3s 0.20s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(6) { animation: fadeInUp 0.3s 0.24s cubic-bezier(0.4,0,0.2,1) both; }
+.stagger > *:nth-child(n+7) { animation: fadeInUp 0.3s 0.28s cubic-bezier(0.4,0,0.2,1) both; }
+
+/* ===================== SPINNER ===================== */
+
+.spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.spinner-lg {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+}
+
+.spinner-indigo {
+  border-color: rgba(99,102,241,0.2);
+  border-top-color: #6366f1;
+}
+
+.spinner-pink {
+  border-color: rgba(236,72,153,0.2);
+  border-top-color: #ec4899;
+}
+
+/* Inline spinner inside a button */
+.btn-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===================== SKELETON ===================== */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 200% auto;
+  animation: shimmer 1.5s ease infinite;
+  border-radius: 8px;
+}
+
+/* ===================== HOVER LIFT ===================== */
+
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.2s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -6px rgba(0,0,0,0.35);
+}
+
+/* ===================== NOTIFICATION PULSE ===================== */
+
+.pulse-badge {
+  animation: softPulse 2.2s ease-in-out infinite;
+}
+
+/* ===================== TOAST (improved) ===================== */
 
 .toast {
   position: fixed;
@@ -161,7 +283,11 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   z-index: 100;
-  animation: fadeIn 0.3s ease;
+  animation: toastSlideUp 0.28s cubic-bezier(0.4,0,0.2,1) forwards;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px -4px rgba(0,0,0,0.4);
+  white-space: nowrap;
 }
 
 .toast-error {
@@ -222,6 +348,7 @@ body {
 .dashboard-page-content {
   padding: 2rem;
   flex: 1;
+  animation: fadeInUp 0.3s cubic-bezier(0.4,0,0.2,1) both;
 }
 
 /* Mobile top bar — hidden on desktop */
@@ -268,6 +395,8 @@ body {
   inset: 0;
   background: rgba(0,0,0,0.65);
   z-index: 38;
+  transition: opacity 0.25s ease;
+  animation: fadeIn 0.25s ease both;
 }
 
 /* Sidebar — base (desktop) */

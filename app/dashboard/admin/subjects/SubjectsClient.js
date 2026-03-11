@@ -47,6 +47,25 @@ export default function SubjectsClient({ subjects: initial }) {
     }
   };
 
+  const deleteSubject = async (subject) => {
+    const confirmMsg = lang === 'zh'
+      ? `確定要刪除「${subject.name_zh}」嗎？此操作無法復原。`
+      : `Delete "${subject.name_en}"? This cannot be undone.`;
+    if (!confirm(confirmMsg)) return;
+    const res = await fetch('/api/subjects', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: subject.id }),
+    });
+    if (res.ok) {
+      setSubjects(prev => prev.filter(s => s.id !== subject.id));
+      showToast(lang === 'zh' ? '科目已刪除' : 'Subject deleted');
+    } else {
+      const data = await res.json();
+      showToast(data.error, true);
+    }
+  };
+
   const categories = [...new Set(subjects.map(s => s.category).filter(Boolean))];
 
   return (
@@ -110,14 +129,14 @@ export default function SubjectsClient({ subjects: initial }) {
                 {cat || (lang === 'zh' ? '未分類' : 'Uncategorized')}
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                {group.map(s => <SubjectCard key={s.id} subject={s} lang={lang} onToggle={() => toggleActive(s)} />)}
+                {group.map(s => <SubjectCard key={s.id} subject={s} lang={lang} onToggle={() => toggleActive(s)} onDelete={() => deleteSubject(s)} />)}
               </div>
             </div>
           );
         })
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-          {subjects.map(s => <SubjectCard key={s.id} subject={s} lang={lang} onToggle={() => toggleActive(s)} />)}
+          {subjects.map(s => <SubjectCard key={s.id} subject={s} lang={lang} onToggle={() => toggleActive(s)} onDelete={() => deleteSubject(s)} />)}
         </div>
       )}
 
@@ -126,12 +145,12 @@ export default function SubjectsClient({ subjects: initial }) {
   );
 }
 
-function SubjectCard({ subject, lang, onToggle }) {
+function SubjectCard({ subject, lang, onToggle, onDelete }) {
   return (
     <div style={{
       background: 'rgba(255,255,255,0.03)', border: `1px solid ${subject.is_active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)'}`,
       borderRadius: '12px', padding: '1rem 1.25rem',
-      opacity: subject.is_active ? 1 : 0.5,
+      opacity: subject.is_active ? 1 : 0.55,
       transition: 'all 0.2s',
     }}>
       <div style={{ fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', marginBottom: '2px' }}>
@@ -140,16 +159,24 @@ function SubjectCard({ subject, lang, onToggle }) {
       <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.75rem' }}>
         {lang === 'zh' ? subject.name_en : subject.name_zh}
       </div>
-      <button onClick={onToggle} style={{
-        padding: '4px 12px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 600,
-        border: subject.is_active ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(34,197,94,0.3)',
-        background: subject.is_active ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)',
-        color: subject.is_active ? '#f87171' : '#4ade80', cursor: 'pointer',
-      }}>
-        {subject.is_active
-          ? (lang === 'zh' ? '停用' : 'Disable')
-          : (lang === 'zh' ? '啟用' : 'Enable')}
-      </button>
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <button onClick={onToggle} style={{
+          padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 600,
+          border: subject.is_active ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(34,197,94,0.3)',
+          background: subject.is_active ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)',
+          color: subject.is_active ? '#f87171' : '#4ade80', cursor: 'pointer',
+        }}>
+          {subject.is_active ? (lang === 'zh' ? '停用' : 'Disable') : (lang === 'zh' ? '啟用' : 'Enable')}
+        </button>
+        <button onClick={onDelete} style={{
+          padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem',
+          border: '1px solid rgba(239,68,68,0.2)',
+          background: 'rgba(239,68,68,0.06)',
+          color: '#f87171', cursor: 'pointer',
+        }} title={lang === 'zh' ? '刪除' : 'Delete'}>
+          🗑
+        </button>
+      </div>
     </div>
   );
 }

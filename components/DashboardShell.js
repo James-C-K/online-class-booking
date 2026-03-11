@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import NotificationBell from './NotificationBell';
 
 export default function DashboardShell({ user, profile, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -30,7 +29,8 @@ export default function DashboardShell({ user, profile, children }) {
           <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             ☰
           </button>
-          <span className="mobile-logo">Class-Booking</span>
+          <span className="mobile-logo" style={{ flex: 1 }}>Class-Booking</span>
+          <NotificationBell userId={user?.id} />
         </div>
 
         <div className="dashboard-page-content">

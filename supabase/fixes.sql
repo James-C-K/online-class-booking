@@ -102,6 +102,11 @@ DROP POLICY IF EXISTS "subjects_update" ON subjects;
 CREATE POLICY "subjects_update" ON subjects
   FOR UPDATE USING (is_admin());
 
+-- Admins can delete subjects.
+DROP POLICY IF EXISTS "subjects_delete" ON subjects;
+CREATE POLICY "subjects_delete" ON subjects
+  FOR DELETE USING (is_admin());
+
 -- ============================================================
 -- 6. STUDENT–INSTRUCTOR ASSIGNMENTS
 -- ============================================================

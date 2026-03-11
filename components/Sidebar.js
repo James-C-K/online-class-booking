@@ -14,11 +14,12 @@ const studentNav = (t) => [
 ];
 
 const teacherNav = (t) => [
-  { href: '/dashboard/teacher',                label: t.dashboard,       icon: '⊞' },
-  { href: '/dashboard/teacher/availability',   label: t.myAvailability,  icon: '🗓' },
-  { href: '/dashboard/teacher/calendar',       label: t.calendar,        icon: '📅' },
-  { href: '/dashboard/teacher/sessions',       label: t.mySessions,      icon: '🗒' },
-  { href: '/dashboard/teacher/students',       label: t.myStudents,      icon: '👥' },
+  { href: '/dashboard/teacher',                    label: t.dashboard,          icon: '⊞' },
+  { href: '/dashboard/teacher/availability',       label: t.myAvailability,     icon: '🗓' },
+  { href: '/dashboard/teacher/calendar',           label: t.calendar,           icon: '📅' },
+  { href: '/dashboard/teacher/sessions',           label: t.mySessions,         icon: '🗒' },
+  { href: '/dashboard/teacher/sessions/new',       label: t.createGroupSession, icon: '👥' },
+  { href: '/dashboard/teacher/students',           label: t.myStudents,         icon: '🎓' },
 ];
 
 const adminNav = (t) => [

@@ -1,6 +1,6 @@
 # X Platform — Progress Tracker
-**Last updated:** 2026-03-11
-**Version:** Phase 1 — all known issues fixed (pending live verification)
+**Last updated:** 2026-03-12
+**Version:** Phase 1 complete — Gap Analysis v1.0 added, pre-build blockers identified
 
 ---
 
@@ -120,7 +120,7 @@ All Phase 1 known issues resolved. Run `supabase/fixes.sql` in Supabase SQL Edit
 - **`is_admin()` helper function** — SECURITY DEFINER function prevents RLS recursion in admin policies
 - **Orphaned profiles cleanup** — ghost profile rows without auth.users entries removed
 
-## 🔧 Pending
+## 🔧 Pending — Immediate (Before Next Phase)
 
 - [ ] **Become platform_admin:** Sign up, then go to Supabase → Table Editor → profiles → change your `role` to `platform_admin`
 - [ ] **Run `supabase/fixes.sql`** in Supabase SQL Editor
@@ -128,43 +128,95 @@ All Phase 1 known issues resolved. Run `supabase/fixes.sql` in Supabase SQL Edit
 
 ---
 
-## 📋 Phase 2 — Next Up (Months 4–5)
+## ⚠️ Pre-Build Blockers (MUST resolve before coding payout & booking)
 
-> Start here next session after verifying Phase 1 works end-to-end.
+> See `GAP_ANALYSIS_v1.md` for full details on all gaps. These are foundational — skipping them requires costly rewrites later.
 
-### Scheduling & Integrations
+- [ ] **I-09 / C-05** — Rate & commission versioning: add `InstructorRate` + `SubjectVersion` tables with `valid_from` timestamps
+- [ ] **SB-01 / SB-09** — Subject versioning + `subject_type` field (`session_based | project_based | hybrid`)
+- [ ] **U-03 / U-07** — Soft delete: add `is_archived` to `profiles` — never hard-delete users
+- [ ] **BK-07** — Extend `sessions.status`: `completed`, `no_show_student`, `no_show_instructor`, `late_cancelled`, `disputed`, `resolved`
+- [ ] **C-01 / C-02** — Define payout rules per session status + `PayoutPeriod` table (weekly/bi-weekly/monthly cycles)
+
+---
+
+## 📋 Phase 1 Add-Ons (add to MVP before Phase 2)
+
+> From Gap Analysis — these should be in Phase 1 scope, not deferred.
+
+- [ ] **I-08** — Availability exception dates (`AvailabilityException` table for holidays/leave)
+- [ ] **I-02** — Instructor suspension workflow + `InstructorSuspension` log table
+- [ ] **S-07** — Bulk student reassignment tool (when instructor leaves)
+- [ ] **O-01** — Org session quota (`OrgContract` table with `session_quota`, 80%/100% warnings)
+- [ ] **P-04 / O-06** — Audit logs: `AuditLog` table for platform admin + org admin actions
+- [ ] **N-05** — Line account linking OAuth flow (user settings → Line Login → store Line User ID)
+
+---
+
+## 📋 Phase 2 — Core Operations
+
+> Start after pre-build blockers and Phase 1 add-ons are complete.
+
+### Booking & Scheduling
+- [ ] **BK-01** — Admin-initiated booking on behalf of student
+- [ ] **BK-02** — Bulk / recurring session scheduling wizard
+- [ ] **BK-03** — Session rescheduling flow (not just cancel + rebook)
+- [ ] **BK-04** — No-show tracking + configurable policy enforcement
 - [ ] **SCH-04** Google Calendar sync (OAuth2 + Calendar API)
 - [ ] **SCH-05** Outlook calendar sync (Microsoft Graph API)
-- [ ] **SCH-06** Conflict detection across orgs
 - [ ] **SCH-07** Timezone-aware UI (date-fns-tz)
 - [ ] **BKG-02** Group session creation (instructor/admin)
 - [ ] **BKG-03** Group session join (student, capacity enforced)
 - [ ] **BKG-05** Waitlist for full group sessions
 
+### Project Submissions
+- [ ] **PR-01** — Structured submission form builder per subject type
+- [ ] **PR-02** — File attachment support (Supabase Storage)
+- [ ] **PR-03** — Revision / resubmission flow after rejection
+- [ ] **PR-06** — Submission version history (`ProjectSubmission` + `SubmissionFile` tables)
+- [ ] **PR-09** — Global project status dashboard for platform admin
+
+### Students & Orgs
+- [ ] **S-01** — Student enrollment period (`StudentEnrollment` table)
+- [ ] **S-04** — Student transfer between orgs workflow
+- [ ] **O-02** — Org contract period with renewal alerts
+- [ ] **O-03** — Org freeze / suspension mode
+
 ### Notifications
-- [ ] **NTF-01** Bull queue setup (or Supabase Edge Functions)
-- [ ] **NTF-02** Email notifications — booking confirmation, cancellation, reminder (SendGrid or Resend)
+- [ ] **NTF-01** Bull queue or Supabase Edge Functions
+- [ ] **NTF-02** Email notifications — booking confirmation, cancellation, reminder (Resend)
 - [ ] **NTF-03** In-app notification bell (Supabase Realtime)
 - [ ] **NTF-04** SMS via Twilio
-- [ ] **NTF-05** Line Messaging API
+- [ ] **NTF-05** Line Messaging API (depends on N-05 OAuth flow)
 - [ ] **NTF-06** Calendar invites (.ics on booking confirmation)
 - [ ] **NTF-08** Reminder scheduler (24h + 1h before session)
+- [ ] **N-01** — Notification delivery failure dashboard + manual resend
+- [ ] **N-03** — Targeted announcements (by org, role, or user group)
+
+### Payout & Billing
+- [ ] **C-03** — Payout hold for suspended instructors
+- [ ] **C-08** — Instructor payout statement / payslip export
+- [ ] **C-10** — Org invoice / billing statement (PDF export)
 
 ---
 
-## 📋 Phase 3 — In-Session Features (Months 6–7)
+## 📋 Phase 3 — In-Session Features
 
 - [ ] Video conferencing link (Zoom / Google Meet / Teams)
 - [ ] In-platform real-time chat per session (Supabase Realtime)
-- [ ] File upload/download (Supabase Storage)
 - [ ] Session recording storage + playback
 - [ ] Whiteboard integration (Excalidraw embed)
 - [ ] Post-session notes (teacher) ✅ already done
 
 ---
 
-## 📋 Phase 4 — Analytics (Months 8–9)
+## 📋 Phase 4 — Analytics & Reporting
 
+- [ ] **R-03** — Financial reconciliation report (org billing vs. instructor payouts vs. platform margin)
+- [ ] **R-01** — Real-time operational dashboard (live sessions, pending approvals, failed notifications)
+- [ ] **R-08** — Audit trail report (filterable by user, org, date, action type)
+- [ ] **S-06** — At-risk student flagging (configurable thresholds)
+- [ ] **R-07** — Scheduled report emails (auto-send monthly PDF to org admin)
 - [ ] Org-level analytics dashboard (extend existing admin analytics)
 - [ ] Instructor performance reports
 - [ ] Student progress tracking
@@ -173,7 +225,7 @@ All Phase 1 known issues resolved. Run `supabase/fixes.sql` in Supabase SQL Edit
 
 ---
 
-## 📋 Phase 5 — Hardening (Months 10–12)
+## 📋 Phase 5 — Hardening
 
 - [ ] WCAG 2.1 AA accessibility audit
 - [ ] Security audit (OWASP top 10)

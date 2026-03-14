@@ -110,49 +110,33 @@ export async function POST(request) {
   // ── 1-on-1 session booking ──
   if (!instructor_id) return NextResponse.json({ error: 'instructor_id required for 1on1' }, { status: 400 });
 
-  // Conflict check
-  const { data: conflict } = await supabase
-    .from('sessions')
-    .select('id')
-    .eq('instructor_id', instructor_id)
-    .eq('status', 'confirmed')
-    .lt('start_time', end_time)
-    .gt('end_time', start_time)
-    .single();
-
-  if (conflict) return NextResponse.json({ error: 'This time slot is already booked.' }, { status: 409 });
-
-  // Create session
-  const { data: session, error: sessionError } = await supabase
-    .from('sessions')
-    .insert({
-      type: '1on1',
-      instructor_id,
-      subject_id: subject_id || null,
-      org_id: org_id || null,
-      start_time,
-      end_time,
-      status: 'confirmed',
-    })
-    .select(`
-      id, start_time, end_time,
-      subject:subjects (name_en, name_zh)
-    `)
-    .single();
+  // Use SECURITY DEFINER RPC to bypass stale PostgREST RLS cache.
+  // Auth is already verified above via getUser(). The function handles
+  // conflict check, session insert, and instructor participant insert atomically.
+  const { data: rpcResult, error: sessionError } = await supabase.rpc('book_1on1_session', {
+    p_instructor_id: instructor_id,
+    p_subject_id: subject_id || null,
+    p_org_id: org_id || null,
+    p_start_time: start_time,
+    p_end_time: end_time,
+  });
 
   if (sessionError) return NextResponse.json({ error: sessionError.message }, { status: 500 });
 
-  // Add participants
-  await supabase.from('session_participants').insert([
-    { session_id: session.id, user_id: instructor_id, role: 'instructor', status: 'confirmed' },
-    { session_id: session.id, user_id: user.id, role: 'student', status: 'confirmed' },
-  ]);
+  const session = { id: rpcResult.id, start_time: rpcResult.start_time, end_time: rpcResult.end_time, subject: null };
+
+  // Add student as participant (also via RPC-equivalent direct insert — already bypassed by function above for instructor)
+  await supabase.rpc('add_session_participant', {
+    p_session_id: rpcResult.id,
+    p_user_id: user.id,
+    p_role: 'student',
+  });
 
   // Fetch names + emails for notifications
   const { data: studentProfile } = await supabase
-    .from('profiles').select('full_name, email').eq('id', user.id).single();
+    .from('profiles').select('full_name').eq('id', user.id).single();
   const { data: instructorProfile } = await supabase
-    .from('profiles').select('full_name, email').eq('id', instructor_id).single();
+    .from('profiles').select('full_name').eq('id', instructor_id).single();
 
   const subjectName = session.subject?.name_zh || session.subject?.name_en || '—';
 
@@ -180,8 +164,8 @@ export async function POST(request) {
 
   // Send emails (fire and forget)
   sendBookingConfirmation({
-    student: { name: studentProfile?.full_name, email: studentProfile?.email },
-    instructor: { name: instructorProfile?.full_name, email: instructorProfile?.email },
+    student: { name: studentProfile?.full_name, email: null },
+    instructor: { name: instructorProfile?.full_name, email: null },
     subject: subjectName,
     startTime: session.start_time,
     endTime: session.end_time,

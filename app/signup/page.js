@@ -53,6 +53,9 @@ export default function SignupPage() {
       <LangToggle />
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div className="glass-card animate-fade-in">
+          <div style={{ display: 'inline-block', background: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(59,130,246,0.25))', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '999px', padding: '0.25rem 0.85rem', marginBottom: '0.85rem', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.05em', color: 'rgba(196,181,253,0.95)' }}>
+            {t.tagline}
+          </div>
           <h1 className="gradient-text" style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
             {t.createAccount}
           </h1>
